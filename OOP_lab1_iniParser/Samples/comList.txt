@@ -1,0 +1,10 @@
+Commands list: 
+HELP - show commands list and descriptions
+INIT file - Initialise parser with file, can be used more than once through the session (if more than one file need to be parsed)
+EXSEC ‘section’ - Once parser is initialised, it is used to check if exact section exist in file
+EXPAR ‘section’ ‘parameter’ - Once parser is initialised, it is used to check if exact param exist in exact section of file.
+GETVAL ‘section’ ‘parameter’ ‘type’ - Gets value of exact parameter in exact section of file. Type is the type of parameter’s value (can be FLT(float), INT(integer), STR(string)).
+LAST - Show a name of the current file parsed.
+SHOW - Show all sections and parameters from the file.
+MAKE ‘section’ ‘parameter’ ‘value’ - Add parameter to section with value;
+EXIT - For exiting the program.

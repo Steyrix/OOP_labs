@@ -1,0 +1,14 @@
+[STOP]
+didntmake = 30
+floatval = 50.67
+hells = 50; intvalue
+[MarkDown]
+
+stringval = str
+[dred
+der]
+
+[Jenny]
+hello = 70
+   father = goodguy
+heyyo = 60.4
