@@ -7,23 +7,23 @@
 
 class MenuHandler
 {
-private:
-    std::unique_ptr<iniParser> parser;
-    std::ifstream helpInfo;
-    std::string helpInfoFile;
-    std::string helpText;
-    std::string lastFile;
-    void showHelp() const;
-    void exSection(std::string const &sectionName) const;
-    void exParam(std::string const &sectionName, std::string const &paramName) const;
-    void getVal(std::string const &sectionName, std::string const &paramName, std::string const &type) const;
-    void makeParam(std::string const &sectionName, std::string const &paramName, std::string const &value);
-    void initParser(std::string const &fileName);
 public:
     MenuHandler();
     ~MenuHandler();
     void startMenu();
     void getCommand();
+private:
+    iniParser parser;
+    std::ifstream helpInfo;
+    std::string helpInfoFile;
+    std::string helpText;
+    std::string lastFile;
+    void showHelp() const;
+    void exSection(const std::string&sectionName) const;
+    void exParam(const std::string &sectionName, const std::string &paramName) const;
+    void getVal(const std::string &sectionName, const std::string &paramName, const std::string &type) const;
+    void makeParam(const std::string &sectionName, const std::string &paramName, const std::string &value);
+    void initParser(const std::string &fileName);
 };
 
 #endif /* menuHandler_hpp */

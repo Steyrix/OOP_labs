@@ -4,7 +4,6 @@ using namespace std;
 
 MenuHandler::MenuHandler()
 {
-    parser = std::unique_ptr<iniParser>(new iniParser());
     helpInfoFile = "comList.txt";
     helpInfo.open(helpInfoFile);
     
@@ -24,9 +23,10 @@ void MenuHandler::startMenu()
     getCommand();
 }
 
-void MenuHandler::initParser(string const &fileName)
+void MenuHandler::initParser(const string &fileName)
 {
-    if(parser->initialize(fileName))
+    parser.initialize(fileName);
+    if(parser.isParsed())
     {
         cout << "File " << fileName << " is succesfully parsed." << endl;
         lastFile = fileName;
@@ -35,37 +35,37 @@ void MenuHandler::initParser(string const &fileName)
         cout << "File is not parsed :(" << endl;
 }
 
-void MenuHandler::exSection(string const &sectionName) const
+void MenuHandler::exSection(const string &sectionName) const
 {
-    if(parser->existSection(sectionName))
+    if(parser.existSection(sectionName))
         cout << "Section " << sectionName << " exists in the file" << endl;
     else
         cout << "Section " << sectionName << " doesn't exist in the file" << endl;
 }
 
-void MenuHandler::exParam(string const &sectionName, string const &paramName) const
+void MenuHandler::exParam(const string &sectionName, const string &paramName) const
 {
-    if(parser->existParameter(sectionName, paramName))
+    if(parser.existParameter(sectionName, paramName))
         cout << "Parameter " << sectionName << " exists in the file" << endl;
     else
         cout << "Parameter " << sectionName << " doesn't exist in the file" << endl;
 }
 
-void MenuHandler::getVal(string const &sectionName, string const &paramName, string const &type) const
+void MenuHandler::getVal(const string &sectionName, const string &paramName, const string &type) const
 {
     if(type == "STR")
-        cout << parser->getValue<string>(sectionName, paramName) << endl;
+        cout << parser.getValue<string>(sectionName, paramName) << endl;
     else if (type == "INT")
-        cout << parser->getValue<int>(sectionName, paramName) << endl;
+        cout << parser.getValue<int>(sectionName, paramName) << endl;
     else if (type == "FLT")
-        cout << parser->getValue<float>(sectionName, paramName) << endl;
+        cout << parser.getValue<float>(sectionName, paramName) << endl;
     else
         cout << "Unknown type of parameter's value! Please try INT,FLT,STR." << endl;
 }
 
-void MenuHandler::makeParam(string const &sectionName, string const &paramName, string const &value)
+void MenuHandler::makeParam(const string &sectionName, const string &paramName, const string &value)
 {
-    parser->makeParameter(sectionName, paramName, value);
+    parser.makeParameter(sectionName, paramName, value);
     cout << "Parameter " << paramName << "is succesfully added to section " << sectionName << endl;
 }
 
@@ -108,7 +108,7 @@ void MenuHandler::getCommand()
         }
         else if (com == "SHOW")
         {
-            parser->show();
+            parser.show();
         }
         else if (com == "EXIT" || com == "exit")
             continue;

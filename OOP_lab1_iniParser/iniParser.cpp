@@ -31,18 +31,9 @@ iniParser::iniParser()
     iniParsed = false;
 }
 
-iniParser::iniParser(string const &fName)
+iniParser::iniParser(const string &fName)
 {
-    fileName = fName;
-    
-    bool result = iniParse();
-    if(result)
-        iniParsed = true;
-    else
-    {
-        iniParsed = false;
-        throw iniNotParsedException();
-    }
+    initialize(fName);
 }
 
 iniParser::~iniParser()
@@ -50,19 +41,14 @@ iniParser::~iniParser()
     dataMap.clear();
 }
 
-bool iniParser::initialize(string const &fName) throw (iniNotParsedException)
+void iniParser::initialize(const string &fName) throw (iniNotParsedException)
 {
     if(iniParsed)
         dataMap.clear();
     
     fileName = fName;
     
-    bool result = iniParse();
-    iniParsed = result;
-    if(result)
-        return true;
-    else
-        throw iniNotParsedException();
+    iniParsed = iniParse();
 }
 
 bool iniParser::iniParse() throw (wrongFileException)
@@ -84,10 +70,7 @@ bool iniParser::iniParse() throw (wrongFileException)
             if(line[0] == ';')
                 continue;
             
-            lineEnd = line.length()-1;
-            
             findCommentInLine(line, lineEnd);
-            
             if(!findSectionInLine(line, lastSection))
                 findParamInLine(line, lastSection, lineEnd);
         }
@@ -102,7 +85,7 @@ bool iniParser::iniParse() throw (wrongFileException)
     }
 }
 
-void iniParser::findCommentInLine(string const &line, size_t& lineEnd) const
+void iniParser::findCommentInLine(const string &line, size_t& lineEnd) const
 {
     size_t comment = line.find(';');
     if(comment != string::npos)
@@ -110,7 +93,7 @@ void iniParser::findCommentInLine(string const &line, size_t& lineEnd) const
     else lineEnd = line.length() - 1;
 }
 
-bool iniParser::findSectionInLine(string const &line, string& lastSection) const
+bool iniParser::findSectionInLine(const string &line, string& lastSection) const
 {
     size_t p1 = line.find('[');
     size_t p2 = line.find(']');
@@ -125,7 +108,7 @@ bool iniParser::findSectionInLine(string const &line, string& lastSection) const
     return false;
 }
 
-void iniParser::findParamInLine(string const &line, string const &lastSection, size_t& lineEnd)
+void iniParser::findParamInLine(const string &line, const string &lastSection, size_t& lineEnd)
 {
     size_t p3 = line.find('=');
     if(p3 != string::npos)
@@ -137,14 +120,14 @@ void iniParser::findParamInLine(string const &line, string const &lastSection, s
     }
 }
 
-void iniParser::makeParameter(string const &sectionName, string const &paramName, string const &value) throw(iniNotParsedException)
+void iniParser::makeParameter(const string &sectionName, const string &paramName, const string &value) throw(iniNotParsedException)
 {
     if(iniParsed)
         dataMap[sectionName][paramName] = value;
     else throw iniNotParsedException();
 }
 
-bool iniParser::existSection(string const &sectionName) const throw (iniNotParsedException)
+bool iniParser::existSection(const string &sectionName) const throw (iniNotParsedException)
 {
     if(!iniParsed)
         throw iniNotParsedException();
@@ -156,7 +139,7 @@ bool iniParser::existSection(string const &sectionName) const throw (iniNotParse
         return false;
 }
 
-bool iniParser::existParameter(string const &sectionName, string const &paramName) const throw (InvalidSectionException, iniNotParsedException)
+bool iniParser::existParameter(const string &sectionName, const string &paramName) const throw (InvalidSectionException, iniNotParsedException)
 {
     if(!iniParsed)
         throw iniNotParsedException();
@@ -173,7 +156,7 @@ bool iniParser::existParameter(string const &sectionName, string const &paramNam
 }
 
 template <>
-int iniParser::getValue(string const &sectionName, string const &paramName) const throw
+int iniParser::getValue(const string &sectionName, const string &paramName) const throw
 (InvalidSectionException, InvalidParameterException, InvalidDataTypeException)
 {
     if(!iniParsed)
@@ -198,7 +181,7 @@ int iniParser::getValue(string const &sectionName, string const &paramName) cons
 }
 
 template <>
-float iniParser::getValue(string const &sectionName, string const &paramName) const throw
+float iniParser::getValue(const string &sectionName, const string &paramName) const throw
 (InvalidSectionException, InvalidParameterException, InvalidDataTypeException)
 {
     if(!iniParsed)
@@ -223,7 +206,7 @@ float iniParser::getValue(string const &sectionName, string const &paramName) co
 }
 
 template <>
-string iniParser::getValue(string const &sectionName, string const &paramName) const throw
+string iniParser::getValue(const string &sectionName, const string &paramName) const throw
 (InvalidSectionException, InvalidParameterException, InvalidDataTypeException)
 {
     if(!iniParsed)
@@ -269,4 +252,9 @@ void iniParser::show() const
     if(!iniParsed) return;
     outputKeys();
     outputSections();
+}
+
+bool iniParser::isParsed() const
+{
+    return iniParsed;
 }
