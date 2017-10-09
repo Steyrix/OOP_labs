@@ -6,7 +6,7 @@
 #include "myException.hpp"
 
 //Added for readability. Each section has its own map of parameters
-typedef std::map<std::string, std::map<std::string,std::string>> DataMap;
+using DataMap = std::map<std::string, std::map<std::string,std::string>>;
 
 class iniParser
 {
