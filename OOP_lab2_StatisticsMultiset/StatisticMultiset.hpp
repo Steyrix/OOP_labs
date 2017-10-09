@@ -95,7 +95,7 @@ template <typename T>
 void StatisticMultiset<T>::RecalculateAvg() const
 {
     cachedAvgValue = 0;
-    for(auto it: data)
+    for(const auto &it: data)
         cachedAvgValue += it;
     cachedAvgValue /= data.size();
 }
@@ -196,7 +196,7 @@ void StatisticMultiset<T>::AddNum(T num)
 template <typename T>
 void StatisticMultiset<T>::AddNum(const std::vector<T> &vec)
 {
-    for(auto it: vec)
+    for(const auto &it: vec)
         data.insert(it);
     changeFlag = true;
 }
@@ -204,7 +204,7 @@ void StatisticMultiset<T>::AddNum(const std::vector<T> &vec)
 template <typename T>
 void StatisticMultiset<T>::AddNum(const std::set<T> &dset)
 {
-    for(auto it: dset)
+    for(const auto &it: dset)
         data.insert(it);
     changeFlag = true;
 }
@@ -212,7 +212,7 @@ void StatisticMultiset<T>::AddNum(const std::set<T> &dset)
 template <typename T>
 void StatisticMultiset<T>::AddNum(const std::list<T> &dlist)
 {
-    for(auto it: dlist)
+    for(const auto &it: dlist)
         data.insert(it);
     changeFlag = true;
 }
@@ -220,7 +220,7 @@ void StatisticMultiset<T>::AddNum(const std::list<T> &dlist)
 template <typename T>
 void StatisticMultiset<T>::AddNum(const std::multiset<T> &mset)
 {
-    for(auto it: mset)
+    for(const auto &it: mset)
         data.insert(it);
     changeFlag = true;
 }
@@ -228,7 +228,7 @@ void StatisticMultiset<T>::AddNum(const std::multiset<T> &mset)
 template <typename T>
 void StatisticMultiset<T>::AddNum(const StatisticMultiset &statset)
 {
-    for(auto it: statset.data)
+    for(const auto &it: statset.data)
         data.insert(it);
     changeFlag = true;
 }
@@ -237,7 +237,7 @@ void StatisticMultiset<T>::AddNum(const StatisticMultiset &statset)
 template <typename T>
 void StatisticMultiset<T>::Show() const
 {
-    for(auto it: data)
+    for(const auto &it: data)
         std::cout << it << std::endl;
 }
 
