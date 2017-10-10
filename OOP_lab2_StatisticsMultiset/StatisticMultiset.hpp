@@ -3,6 +3,7 @@
 #include <set> 
 #include <list>
 #include <vector>
+#include <map>
 #include <iostream>
 
 template <class T>
@@ -20,8 +21,8 @@ class StatisticMultiset
         T GetMinVal() const; //
         float GetAvgVal() const; //
         
-        int GetCountAbove(float threshold) const;
-        int GetCountUnder(float threshold) const;
+        int GetCountAbove(float threshold) const; //
+        int GetCountUnder(float threshold) const; //
         
         void AddNum (T num); //
         void AddNum (const std::vector<T> &vec); //
@@ -36,17 +37,17 @@ class StatisticMultiset
         StatisticMultiset<T>& operator=(const StatisticMultiset<T> &otherset); //
     private:
         std::multiset<T> data;
+    
+        mutable std::map<float, int> cacheAbove;
+        mutable std::map<float, int> cacheUnder;
         mutable T cachedMaxValue;
         mutable T cachedMinValue;
         mutable float cachedAvgValue;
-        mutable bool changeFlag;
-        mutable std::pair<float,int> cachedCountAbove;
-        mutable std::pair<float,int> cachedCountUnder;
+    
+        void ResetMinMax(T num) const; //
         void RecalculateAvg() const; //
-        void RecalculateAll() const; //
         void RecalculateCountAbove(float t) const; //
         void RecalculateCountUnder(float t) const; //
-        void setFlagToFalse() const; //
 };
 
 
@@ -57,40 +58,33 @@ StatisticMultiset<T>::StatisticMultiset()
     cachedMaxValue = 0;
     cachedMinValue = 0;
     cachedAvgValue = 0;
-    cachedCountAbove = std::make_pair(0, 0);
-    cachedCountUnder = std::make_pair(0, 0);
-    changeFlag = false;
 }
 
 template <typename T>
 StatisticMultiset<T>::StatisticMultiset(const std::vector<T> &vec)
 {
     AddNum(vec);
-    changeFlag = true;
 }
 
 template <typename T>
 StatisticMultiset<T>::StatisticMultiset(const std::set<T> &dset)
 {
     AddNum(dset);
-    changeFlag = true;
 }
 
 template <typename T>
 StatisticMultiset<T>::StatisticMultiset(const std::multiset<T> &mset)
 {
     AddNum(mset);
-    changeFlag = true;
 }
 
 template <typename T>
 StatisticMultiset<T>::StatisticMultiset(const std::list<T> &dlist)
 {
     AddNum(dlist);
-    changeFlag = true;
 }
 
-//===GETTERS===
+//===GETTERS AND RECALCULATES CACHES===
 template <typename T>
 void StatisticMultiset<T>::RecalculateAvg() const
 {
@@ -105,7 +99,7 @@ void StatisticMultiset<T>::RecalculateCountAbove(float t) const
 {
     auto it = data.upper_bound(t);
     int cnt = static_cast<int>(std::distance(it, data.end()));
-    cachedCountAbove = std::make_pair(t,cnt);
+    cacheAbove[t] = cnt;
 }
 
 template <typename T>
@@ -113,76 +107,61 @@ void StatisticMultiset<T>::RecalculateCountUnder(float t) const
 {
     auto it = data.lower_bound(t);
     int cnt = static_cast<int>(std::distance(data.begin(), it));
-    cachedCountUnder = std::make_pair(t, cnt);
+    cacheUnder[t] = cnt;
 }
 
 template <typename T>
-void StatisticMultiset<T>::RecalculateAll() const
+void StatisticMultiset<T>::ResetMinMax(T num) const
 {
-    cachedMaxValue = *std::max_element(data.begin(), data.end());
-    cachedMinValue = *data.begin();
-    RecalculateAvg();
-    RecalculateCountUnder(cachedCountUnder.first);
-    RecalculateCountAbove(cachedCountAbove.first);
-}
-
-template <typename T>
-void StatisticMultiset<T>::setFlagToFalse() const
-{
-    changeFlag = false;
-    RecalculateAll();
+    if(data.empty())
+    {
+        cachedMaxValue = num;
+        cachedMinValue = num;
+    }
+    if(num < cachedMinValue)
+        cachedMinValue = num;
+    if(num > cachedMaxValue)
+        cachedMaxValue = num;
 }
 
 template <typename T>
 T StatisticMultiset<T>::GetMaxVal() const
 {
-    if(!changeFlag)
-        return cachedMaxValue;
-    
-    setFlagToFalse();
     return cachedMaxValue;
 }
 
 template <typename T>
 T StatisticMultiset<T>::GetMinVal() const
 {
-    if(!changeFlag)
-        return cachedMinValue;
-    
-    setFlagToFalse();
     return cachedMinValue;
 }
 
 template <typename T>
 float StatisticMultiset<T>::GetAvgVal() const
 {
-    if(!changeFlag)
-        return cachedAvgValue;
-    
-    setFlagToFalse();
     return cachedAvgValue;
 }
 
 template <typename T>
 int StatisticMultiset<T>::GetCountAbove(float threshold) const
 {
-    if(!changeFlag && threshold == cachedCountAbove.first)
-        return cachedCountAbove.second;
-    
-    cachedCountAbove.first = threshold;
-    setFlagToFalse();
-    return cachedCountAbove.second;
+    auto it = cacheAbove.find(threshold);
+    if(it == cacheAbove.end()){
+        RecalculateCountAbove(threshold);
+        return cacheAbove.find(threshold)->second;
+    }
+    else return it->second;
 }
 
 template<typename T>
 int StatisticMultiset<T>::GetCountUnder(float threshold) const
 {
-    if(!changeFlag && threshold == cachedCountUnder.first)
-        return cachedCountUnder.second;
-    
-    cachedCountUnder.first = threshold;
-    setFlagToFalse();
-    return cachedCountUnder.second;
+    auto it = cacheUnder.find(threshold);
+    if(it == cacheUnder.end()){
+        RecalculateCountAbove(threshold);
+        return cacheUnder.find(threshold)->second;
+    }
+    else return it->second;
 }
 
 //===ADDNUMS===
@@ -190,47 +169,63 @@ template <typename T>
 void StatisticMultiset<T>::AddNum(T num)
 {
     data.insert(num);
-    changeFlag = true;
+    ResetMinMax(num);
+    RecalculateAvg();
 }
 
 template <typename T>
 void StatisticMultiset<T>::AddNum(const std::vector<T> &vec)
 {
     for(const auto &it: vec)
+    {
         data.insert(it);
-    changeFlag = true;
+        ResetMinMax(it);
+    }
+    RecalculateAvg();
 }
 
 template <typename T>
 void StatisticMultiset<T>::AddNum(const std::set<T> &dset)
 {
     for(const auto &it: dset)
+    {
         data.insert(it);
-    changeFlag = true;
+        ResetMinMax(it);
+    }
+    RecalculateAvg();
 }
 
 template <typename T>
 void StatisticMultiset<T>::AddNum(const std::list<T> &dlist)
 {
     for(const auto &it: dlist)
+    {
         data.insert(it);
-    changeFlag = true;
+        ResetMinMax(it);
+    }
+    RecalculateAvg();
 }
 
 template <typename T>
 void StatisticMultiset<T>::AddNum(const std::multiset<T> &mset)
 {
     for(const auto &it: mset)
+    {
         data.insert(it);
-    changeFlag = true;
+        ResetMinMax(it);
+    }
+    RecalculateAvg();
 }
 
 template <typename T>
 void StatisticMultiset<T>::AddNum(const StatisticMultiset &statset)
 {
     for(const auto &it: statset.data)
+    {
         data.insert(it);
-    changeFlag = true;
+        ResetMinMax(it);
+    }
+    RecalculateAvg();
 }
 
 //===OTHERFUNCTIONS===
@@ -246,7 +241,6 @@ StatisticMultiset<T>& StatisticMultiset<T>::operator=(const StatisticMultiset &o
 {
     this->data.clear();
     this->AddNum(otherset);
-    this->changeFlag = true;
     return *this;
 }
 
