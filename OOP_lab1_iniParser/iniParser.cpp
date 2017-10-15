@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include "iniParser.hpp"
 #include "myException.hpp"
 
@@ -8,13 +9,11 @@ using namespace std;
 
 bool isInteger(const string &str)
 {
-    if(str.empty() || (!(isdigit(str[0]) &&
-                    (str[0] != '-') && (str[0] != '+'))))
-        return false;
-     
-    char *c;
-    strtol(str.c_str(), &c, 10);
-    return (*c == 0);
+    istringstream istr(str);
+    int i;
+    istr >> noskipws >> i;
+    
+    return istr.eof() && !istr.fail();
 }
 
 bool isFloat(const string &str)
@@ -56,7 +55,7 @@ bool iniParser::iniParse() throw (wrongFileException)
     string line;
     string lastSection;
     size_t lineEnd;
-    
+    ifstream fin;
     fin.open(fileName.c_str());
     if(fin.is_open())
     {
@@ -157,72 +156,46 @@ bool iniParser::existParameter(const string &sectionName, const string &paramNam
 
 template <>
 int iniParser::getValue(const string &sectionName, const string &paramName) const throw
-(InvalidSectionException, InvalidParameterException, InvalidDataTypeException)
+(InvalidDataTypeException)
 {
-    if(!iniParsed)
-        throw iniNotParsedException();
-    
-    auto It = dataMap.find(sectionName);
-    if (It != dataMap.end())
-    {
-        auto It_param = It->second.find(paramName);
-        if(It_param != It->second.end())
-        {
-            if(isInteger(It_param->second))
-                return stoi(It_param->second);
-            else throw InvalidDataTypeException();
-        }
-        else
-            throw InvalidParameterException();
-    }
-    else
-        throw InvalidSectionException();
-    
+    string res = getString(sectionName, paramName);
+    if(isInteger(res))
+        return stoi(res);
+    else throw InvalidDataTypeException();
 }
 
 template <>
 float iniParser::getValue(const string &sectionName, const string &paramName) const throw
-(InvalidSectionException, InvalidParameterException, InvalidDataTypeException)
+(InvalidDataTypeException)
 {
-    if(!iniParsed)
-        throw iniNotParsedException();
-    
-    auto It = dataMap.find(sectionName);
-    if (It != dataMap.end())
-    {
-        auto It_param = It->second.find(paramName);
-        if(It_param != It->second.end())
-        {
-            if(isFloat(It_param->second))
-                return stof(It_param->second);
-            else throw InvalidDataTypeException();
-        }
-        else
-            throw InvalidParameterException();
-    }
-    else
-        throw InvalidSectionException();
-    
+    string res = getString(sectionName, paramName);
+    if(isFloat(res))
+        return stof(res);
+    else throw InvalidDataTypeException();
 }
 
 template <>
 string iniParser::getValue(const string &sectionName, const string &paramName) const throw
-(InvalidSectionException, InvalidParameterException, InvalidDataTypeException)
+(InvalidDataTypeException)
+{
+    return getString(sectionName, paramName);
+}
+
+string iniParser::getString(const string &sectionName, const string &paramName) const throw
+(InvalidSectionException, InvalidParameterException, iniNotParsedException)
 {
     if(!iniParsed)
         throw iniNotParsedException();
     
     auto It = dataMap.find(sectionName);
-    if (It != dataMap.end())
+    if(It != dataMap.end())
     {
         auto It_param = It->second.find(paramName);
         if(It_param != It->second.end())
             return It_param->second;
-        else
-            throw InvalidParameterException();
+        else throw InvalidParameterException();
     }
-    else
-        throw InvalidSectionException();
+    else throw InvalidSectionException();
 }
 
 void iniParser::outputKeys() const

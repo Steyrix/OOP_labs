@@ -1,6 +1,5 @@
 #ifndef iniParser_hpp
 #define iniParser_hpp
-#include <fstream>
 #include <string>
 #include <map>
 #include "myException.hpp"
@@ -23,11 +22,10 @@ public:
     bool isParsed() const;
     template <typename T>
     T getValue (const std::string &sectionName, const std::string &paramName) const throw
-    (InvalidSectionException, InvalidParameterException, InvalidDataTypeException);
+    (InvalidDataTypeException);
 private:
     DataMap dataMap;
     std::string fileName;
-    std::ifstream fin;
     bool iniParsed;
     bool iniParse() throw (wrongFileException);
     void outputKeys() const;
@@ -35,6 +33,8 @@ private:
     void findCommentInLine(const std::string &line, size_t &lineEnd) const;
     bool findSectionInLine(const std::string &line, std::string& lastSection) const;
     void findParamInLine(const std::string &line, const std::string &lastSection, size_t &lineEnd);
+    std::string getString(const std::string &sectionName, const std::string &paramName) const throw
+    (InvalidSectionException,InvalidParameterException, iniNotParsedException);
 };
 
 #endif

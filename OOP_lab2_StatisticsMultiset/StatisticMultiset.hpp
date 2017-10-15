@@ -5,49 +5,48 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include "myException.hpp"
+#include <fstream>
 
 template <class T>
 class StatisticMultiset
 {
     public:
-        StatisticMultiset<T>(); //
-        StatisticMultiset<T>(const std::vector<T> &vec); //
-        StatisticMultiset<T>(const std::set<T> &dset); //
-        StatisticMultiset<T>(const std::multiset<T> &mset); //
-        StatisticMultiset<T>(const std::list<T> &dlist); //
-        StatisticMultiset<T>(const std::string &fileName); //
+        StatisticMultiset<T>();
+        StatisticMultiset<T>(const std::vector<T> &vec);
+        StatisticMultiset<T>(const std::set<T> &dset);
+        StatisticMultiset<T>(const std::multiset<T> &mset);
+        StatisticMultiset<T>(const std::list<T> &dlist);
+        StatisticMultiset<T>(const std::string &fileName);
+    
+        T GetMaxVal() const;
+        T GetMinVal() const;
+        float GetAvgVal() const;
         
-        T GetMaxVal() const; //
-        T GetMinVal() const; //
-        float GetAvgVal() const; //
+        int GetCountAbove(float threshold) const;
+        int GetCountUnder(float threshold) const;
         
-        int GetCountAbove(float threshold) const; //
-        int GetCountUnder(float threshold) const; //
+        void AddNum (T num);
+        void AddNumFromFile (const std::string &fileName);
+        void AddNum(const StatisticMultiset &statset) throw (CopyingFromItself);
+        template <class Iter>
+        void AddNum(Iter first, Iter last);
+    
+        void Show() const;
         
-        void AddNum (T num); //
-        void AddNum (const std::vector<T> &vec); //
-        void AddNum (const std::set<T> &dset); //
-        void AddNum (const std::multiset<T> &mset); //
-        void AddNum (const std::list<T> &dlist); //
-        void AddNumFromFile (const std::string &fileName); //
-        void AddNum(const StatisticMultiset &statset); //
-        
-        void Show() const; //
-        
-        StatisticMultiset<T>& operator=(const StatisticMultiset<T> &otherset); //
+        StatisticMultiset<T>& operator=(const StatisticMultiset<T> &otherset);
+    
     private:
         std::multiset<T> data;
     
         mutable std::map<float, int> cacheAbove;
         mutable std::map<float, int> cacheUnder;
-        mutable T cachedMaxValue;
-        mutable T cachedMinValue;
         mutable float cachedAvgValue;
     
-        void ResetMinMax(T num) const; //
-        void RecalculateAvg() const; //
-        void RecalculateCountAbove(float t) const; //
-        void RecalculateCountUnder(float t) const; //
+        void RecalculateAvg() const;
+        void RecalculateCountAbove(float t) const;
+        void RecalculateCountUnder(float t) const; 
+        void RecalculateAll() const;
 };
 
 
@@ -55,33 +54,31 @@ class StatisticMultiset
 template <typename T>
 StatisticMultiset<T>::StatisticMultiset()
 {
-    cachedMaxValue = 0;
-    cachedMinValue = 0;
     cachedAvgValue = 0;
 }
 
 template <typename T>
 StatisticMultiset<T>::StatisticMultiset(const std::vector<T> &vec)
 {
-    AddNum(vec);
+    AddNum(vec.begin(), vec.end());
 }
 
 template <typename T>
 StatisticMultiset<T>::StatisticMultiset(const std::set<T> &dset)
 {
-    AddNum(dset);
+    AddNum(dset.begin(), dset.end());
 }
 
 template <typename T>
 StatisticMultiset<T>::StatisticMultiset(const std::multiset<T> &mset)
 {
-    AddNum(mset);
+    AddNum(mset.begin(), mset.end());
 }
 
 template <typename T>
 StatisticMultiset<T>::StatisticMultiset(const std::list<T> &dlist)
 {
-    AddNum(dlist);
+    AddNum(dlist.begin(), dlist.end());
 }
 
 //===GETTERS AND RECALCULATES CACHES===
@@ -111,29 +108,26 @@ void StatisticMultiset<T>::RecalculateCountUnder(float t) const
 }
 
 template <typename T>
-void StatisticMultiset<T>::ResetMinMax(T num) const
+void StatisticMultiset<T>::RecalculateAll() const
 {
-    if(data.empty())
-    {
-        cachedMaxValue = num;
-        cachedMinValue = num;
-    }
-    if(num < cachedMinValue)
-        cachedMinValue = num;
-    if(num > cachedMaxValue)
-        cachedMaxValue = num;
+    for( auto &it : cacheAbove)
+        RecalculateCountAbove(it.first);
+    for( auto &it : cacheUnder)
+        RecalculateCountUnder(it.first);
+    
+    RecalculateAvg();
 }
 
 template <typename T>
 T StatisticMultiset<T>::GetMaxVal() const
 {
-    return cachedMaxValue;
+    return *(std::prev(data.end()));
 }
 
 template <typename T>
 T StatisticMultiset<T>::GetMinVal() const
 {
-    return cachedMinValue;
+    return *(data.begin());
 }
 
 template <typename T>
@@ -158,7 +152,7 @@ int StatisticMultiset<T>::GetCountUnder(float threshold) const
 {
     auto it = cacheUnder.find(threshold);
     if(it == cacheUnder.end()){
-        RecalculateCountAbove(threshold);
+        RecalculateCountUnder(threshold);
         return cacheUnder.find(threshold)->second;
     }
     else return it->second;
@@ -169,63 +163,37 @@ template <typename T>
 void StatisticMultiset<T>::AddNum(T num)
 {
     data.insert(num);
-    ResetMinMax(num);
-    RecalculateAvg();
+    RecalculateAll();
 }
 
 template <typename T>
-void StatisticMultiset<T>::AddNum(const std::vector<T> &vec)
+void StatisticMultiset<T>::AddNum(const StatisticMultiset &statset) throw (CopyingFromItself)
 {
-    for(const auto &it: vec)
-    {
-        data.insert(it);
-        ResetMinMax(it);
-    }
-    RecalculateAvg();
-}
-
-template <typename T>
-void StatisticMultiset<T>::AddNum(const std::set<T> &dset)
-{
-    for(const auto &it: dset)
-    {
-        data.insert(it);
-        ResetMinMax(it);
-    }
-    RecalculateAvg();
-}
-
-template <typename T>
-void StatisticMultiset<T>::AddNum(const std::list<T> &dlist)
-{
-    for(const auto &it: dlist)
-    {
-        data.insert(it);
-        ResetMinMax(it);
-    }
-    RecalculateAvg();
-}
-
-template <typename T>
-void StatisticMultiset<T>::AddNum(const std::multiset<T> &mset)
-{
-    for(const auto &it: mset)
-    {
-        data.insert(it);
-        ResetMinMax(it);
-    }
-    RecalculateAvg();
-}
-
-template <typename T>
-void StatisticMultiset<T>::AddNum(const StatisticMultiset &statset)
-{
+    if(statset.data.begin() == this->data.begin())
+        throw CopyingFromItself();
     for(const auto &it: statset.data)
-    {
         data.insert(it);
-        ResetMinMax(it);
-    }
-    RecalculateAvg();
+    RecalculateAll();
+}
+
+template <typename T>
+template <class Iter>
+void StatisticMultiset<T>::AddNum(Iter first, Iter last)
+{
+    for(;first!=last;first++)
+        AddNum(*first);
+}
+
+template <typename T>
+void StatisticMultiset<T>::AddNumFromFile(const std::string &fileName)
+{
+    std::ifstream fin;
+    T num;
+    fin.open(fileName);
+    if(fin.is_open())
+        while(fin >> num)
+            AddNum(num);
+    else std::cerr << "Unable ot open file" << std::endl;
 }
 
 //===OTHERFUNCTIONS===
