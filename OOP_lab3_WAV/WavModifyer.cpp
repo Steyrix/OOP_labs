@@ -104,9 +104,9 @@ void WavModifyer::saveFileAsNew(WavCore &WAV, const string &fileName)
     writer.writeWAV(fileName);
 }
 
-unsigned short WavModifyer::convertSecondsToBytes(float secs, int bitsPerSample, int sampleRate) const
+int WavModifyer::convertSecondsToBytes(float secs, int bitsPerSample, int sampleRate) const
 {
-    return static_cast<unsigned short>((bitsPerSample / 8) * sampleRate * secs * sizeof(short));
+    return ((bitsPerSample / 8) * sampleRate * secs) / sizeof(short);
 }
 
 
@@ -114,14 +114,13 @@ void WavModifyer::cutFromEnding(float seconds, WavCore &WAV)
 {
     WavCore copy = WAV;
     DataArray& soundData = *copy.getData();
-    unsigned short bytesToDelete = convertSecondsToBytes(seconds, copy.getHeader()->bitsPerSample, copy.getHeader()->sampleRate);
-    
+    int bytesToDelete = convertSecondsToBytes(seconds, copy.getHeader()->bitsPerSample, copy.getHeader()->sampleRate);
     for(auto &it: soundData)
     {
         it.erase(it.end()-bytesToDelete, it.end());
     }
-    copy.getHeader()->chunkSize -= bytesToDelete * soundData.size() * sizeof(short);
-    copy.getHeader()->subchunk2Size -= bytesToDelete * soundData.size() * sizeof(short);
+    copy.getHeader()->chunkSize -= (bytesToDelete * soundData.size() * sizeof(short));
+    copy.getHeader()->subchunk2Size -= (bytesToDelete * soundData.size() * sizeof(short));
     
     saveFileAsNew(copy, "cuttedwav.wav");
 }
