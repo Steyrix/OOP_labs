@@ -25,6 +25,7 @@ private:
     void convertSignal(size_t i, size_t samplesCountPerChan, std::vector<float> signal, DataArray &data);
     void attachReverb(size_t samplesCountPerChan, int delaySamples, float decay, std::vector<float> signal);
     void scaleToShort(size_t i, size_t samplesCountPerChan, float maxMagnitude, std::vector<float> signal, DataArray &data);
+    void updateHeader(WavCore &WAV, size_t chanCount, int change);
     float findMaxMagnitude(size_t samplesCountPerChan, int delaySamples, std::vector<float> signal);
     int convertSecondsToBytes(float secs, int bitsPerSample, int sampleRate) const;
     WavWriter writer;

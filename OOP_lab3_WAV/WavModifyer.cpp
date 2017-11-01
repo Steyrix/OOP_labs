@@ -119,12 +119,30 @@ void WavModifyer::cutFromEnding(float seconds, WavCore &WAV)
     {
         it.erase(it.end()-bytesToDelete, it.end());
     }
-    copy.getHeader()->chunkSize -= (bytesToDelete * soundData.size() * sizeof(short));
-    copy.getHeader()->subchunk2Size -= (bytesToDelete * soundData.size() * sizeof(short));
+    updateHeader(copy, soundData.size(), bytesToDelete);
     
-    saveFileAsNew(copy, "cuttedwav.wav");
+    saveFileAsNew(copy, "cutted_from_end.wav");
 }
 
+void WavModifyer::cutFromBeginning(float seconds, WavCore &WAV)
+{
+    WavCore copy = WAV;
+    DataArray& soundData = *copy.getData();
+    int bytesToDelete = convertSecondsToBytes(seconds, copy.getHeader()->bitsPerSample, copy.getHeader()->sampleRate);
+    for(auto &it: soundData)
+    {
+        it.erase(it.begin(), it.begin() + bytesToDelete);
+    }
+    updateHeader(copy, soundData.size(), bytesToDelete);
+    
+    saveFileAsNew(copy, "cutted_from_begin.wav");
+}
+
+void WavModifyer::updateHeader(WavCore &WAV, size_t chanCount, int change)
+{
+    WAV.getHeader()->subchunk2Size -= (change * chanCount * sizeof(short));
+    WAV.getHeader()->chunkSize = 36 + WAV.getHeader()->subchunk2Size;
+}
 
 
 
