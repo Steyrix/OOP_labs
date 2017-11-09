@@ -37,7 +37,7 @@ void WavModifyer::addReverb(int sampleRate, double delaySeconds, float decay, Wa
 
 }
 
-size_t WavModifyer::getChanCount(const DataArray &soundData) const
+size_t WavModifyer::getChanCount(const DataArray &soundData) const throw (BAD_PARAMS_EXC)
 {
     size_t chanCount = soundData.size();
     if(chanCount < 1)
@@ -46,7 +46,7 @@ size_t WavModifyer::getChanCount(const DataArray &soundData) const
     return chanCount;
 }
 
-size_t WavModifyer::getSamplesPerChan(const DataArray &soundData) const
+size_t WavModifyer::getSamplesPerChan(const DataArray &soundData) const throw (BAD_PARAMS_EXC)
 {
     size_t samplesCountPerChan = (size_t)soundData[0].size();
     for (const auto &it : soundData)
@@ -58,6 +58,7 @@ size_t WavModifyer::getSamplesPerChan(const DataArray &soundData) const
 
 void WavModifyer::processSignal(size_t samplesCountPerChan, size_t chanCount, int delaySamples, float decay, DataArray &data)
 {
+
     for(size_t ch = 0; ch < chanCount; ch++)
     {
         vector<float> tmp;
@@ -69,19 +70,19 @@ void WavModifyer::processSignal(size_t samplesCountPerChan, size_t chanCount, in
     }
 }
 
-void WavModifyer::convertSignal(size_t i, size_t samplesCountPerChan, vector<float> signal, DataArray &data)
+void WavModifyer::convertSignal(size_t i, size_t samplesCountPerChan, vector<float> &signal, DataArray &data)
 {
     for(size_t j = 0; j < samplesCountPerChan; j++)
         signal[j] = data[i][j];
 }
 
-void WavModifyer::attachReverb(size_t samplesCountPerChan, int delaySamples, float decay, vector<float> signal)
+void WavModifyer::attachReverb(size_t samplesCountPerChan, int delaySamples, float decay, vector<float> &signal)
 {
     for(size_t i = 0; i < samplesCountPerChan - delaySamples; i++)
-        signal[i+delaySamples] += decay * signal[i];
+        signal[i+delaySamples] += (decay * signal[i]);
 }
 
-float WavModifyer::findMaxMagnitude(size_t samplesCountPerChan, int delaySamples, vector<float> signal)
+float WavModifyer::findMaxMagnitude(size_t samplesCountPerChan, int delaySamples, vector<float> &signal)
 {
     float maxMagnitude = 0.0f;
     for(size_t i = 0; i < samplesCountPerChan - delaySamples; i++)
@@ -91,11 +92,12 @@ float WavModifyer::findMaxMagnitude(size_t samplesCountPerChan, int delaySamples
     return maxMagnitude;
 }
 
-void WavModifyer::scaleToShort(size_t i, size_t samplesCountPerChan, float maxMagnitude, vector<float> signal, DataArray &data)
+void WavModifyer::scaleToShort(size_t i, size_t samplesCountPerChan, float maxMagnitude, vector<float> &signal, DataArray &data)
 {
     float normCoef = 30000.0f / maxMagnitude;
     for(size_t j = 0; j < samplesCountPerChan; j++)
         data[i][j] = (short)(normCoef * signal[j]);
+
 }
 
 void WavModifyer::saveFileAsNew(WavCore &WAV, const string &fileName)
@@ -119,7 +121,7 @@ void WavModifyer::cutFromEnding(float seconds, WavCore &WAV)
     {
         it.erase(it.end()-bytesToDelete, it.end());
     }
-    updateHeader(copy, soundData.size(), bytesToDelete);
+    updateHeader(copy);
     
     saveFileAsNew(copy, "cutted_from_end.wav");
 }
@@ -133,14 +135,63 @@ void WavModifyer::cutFromBeginning(float seconds, WavCore &WAV)
     {
         it.erase(it.begin(), it.begin() + bytesToDelete);
     }
-    updateHeader(copy, soundData.size(), bytesToDelete);
+    updateHeader(copy);
     
     saveFileAsNew(copy, "cutted_from_begin.wav");
 }
 
-void WavModifyer::updateHeader(WavCore &WAV, size_t chanCount, int change)
+void WavModifyer::makeMono(WavCore &WAV)
 {
-    WAV.getHeader()->subchunk2Size -= (change * chanCount * sizeof(short));
+    WavCore copy = WAV;
+    DataArray &source = *copy.getData();
+    size_t samplesCountPerChan;
+    try
+    {
+        checkChannels(source);
+        samplesCountPerChan = getSamplesPerChan(source);
+    }
+    catch(runtime_error &re)
+    {
+        cerr << "Failed to make mono: " << re.what() << endl;
+    }
+    DataArray monoData(1);
+    calculateMean(source, monoData, samplesCountPerChan);
+    
+    if(currState == WavModifyer::ModifyState::SAVE_AS_NEW)
+    {
+        copy.setData(monoData);
+        updateHeader(copy);
+        saveFileAsNew(copy, "MonoWAV.wav");
+    }
+    else
+    {
+        WAV.setData(monoData);
+        updateHeader(WAV);
+    }
+}
+
+void WavModifyer::calculateMean(DataArray &source, DataArray &dest, size_t samplesCountPerChan)
+{
+    dest[0].resize(samplesCountPerChan);
+    for(size_t i = 0; i < samplesCountPerChan; i++)
+        dest[0][i] = (source[0][i] + source[1][i]) / 2;
+}
+
+void WavModifyer::checkChannels(DataArray &data) const throw (BAD_PARAMS_EXC)
+{
+    size_t chanCount = data.size();
+    if(chanCount != 2)
+        throw BAD_PARAMS_EXC("Wrong number of channels! Unable to make mono");
+}
+
+
+void WavModifyer::updateHeader(WavCore &WAV)
+{
+    size_t sizeSubchunk = 0;
+    for(auto &it: *WAV.getData())
+        sizeSubchunk += it.size();
+    WAV.getHeader()->numChannels = WAV.getData()->size();
+    WAV.getHeader()->subchunk2Size = ((unsigned int)sizeSubchunk * sizeof(short));
     WAV.getHeader()->chunkSize = 36 + WAV.getHeader()->subchunk2Size;
 }
 

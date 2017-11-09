@@ -138,7 +138,7 @@ bool WavWriter::rewriteWAVfile(WavCore &WAV)
     if(!WAV.valid)
         return false;
     
-    memcpy(&header, WAV.getHeader(), sizeof(*WAV.getHeader()));
+    memcpy(&header, WAV.getHeader(), sizeof(WavCore::WavHeader));
     DataArray& data = *WAV.getData();
     int chanCount = (int)data.size();
     size_t samplesCountPerChan = (int)data[0].size();
