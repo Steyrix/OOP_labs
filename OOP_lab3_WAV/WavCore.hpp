@@ -13,7 +13,7 @@ public:
     
     WavCore();
     ~WavCore();
-    
+
     struct WavHeader
     {
         int8_t chunkId[4];

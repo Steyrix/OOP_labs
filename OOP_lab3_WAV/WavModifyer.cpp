@@ -16,6 +16,25 @@ void WavModifyer::setModifyingState(WavModifyer::ModifyState state)
 
 WavModifyer::~WavModifyer(){}
 
+size_t WavModifyer::getChanCount(const DataArray &soundData) const throw (BAD_PARAMS_EXC)
+{
+    size_t chanCount = soundData.size();
+    if(chanCount < 1)
+        throw BAD_PARAMS_EXC("Invalid count of channels!");
+    
+    return chanCount;
+}
+
+size_t WavModifyer::getSamplesPerChan(const DataArray &soundData) const throw (BAD_PARAMS_EXC)
+{
+    size_t samplesCountPerChan = (size_t)soundData[0].size();
+    for (const auto &it : soundData)
+        if (it.size() != samplesCountPerChan)
+            throw BAD_PARAMS_EXC("Channels don't have the same number of samples!");
+    
+    return samplesCountPerChan;
+}
+
 void WavModifyer::addReverb(int sampleRate, double delaySeconds, float decay, WavCore &WAV)
 {
     WavCore copy = WAV;
@@ -37,43 +56,23 @@ void WavModifyer::addReverb(int sampleRate, double delaySeconds, float decay, Wa
 
 }
 
-size_t WavModifyer::getChanCount(const DataArray &soundData) const throw (BAD_PARAMS_EXC)
-{
-    size_t chanCount = soundData.size();
-    if(chanCount < 1)
-        throw BAD_PARAMS_EXC("Invalid count of channels!");
-    
-    return chanCount;
-}
-
-size_t WavModifyer::getSamplesPerChan(const DataArray &soundData) const throw (BAD_PARAMS_EXC)
-{
-    size_t samplesCountPerChan = (size_t)soundData[0].size();
-    for (const auto &it : soundData)
-        if (it.size() != samplesCountPerChan)
-            throw BAD_PARAMS_EXC("Channels don't have the same number of samples!");
-    
-    return samplesCountPerChan;
-}
-
 void WavModifyer::processSignal(size_t samplesCountPerChan, size_t chanCount, int delaySamples, float decay, DataArray &data)
 {
-
     for(size_t ch = 0; ch < chanCount; ch++)
     {
+        int cnt = 0;
         vector<float> tmp;
         tmp.resize(data[ch].size());
-        convertSignal(ch, samplesCountPerChan, tmp, data);
+        //convertSignal Lambda
+        for_each(tmp.begin(), tmp.end(), [&](float &val){val = data[ch][cnt++];});
         attachReverb(samplesCountPerChan, delaySamples, decay, tmp);
-        float maxMagnitude = findMaxMagnitude(samplesCountPerChan, delaySamples, tmp);
-        scaleToShort(ch, samplesCountPerChan, maxMagnitude, tmp, data);
+        cnt = 0;
+        float maxMagnitude = findMaxMagnitude(samplesCountPerChan, delaySamples, tmp),
+        normCoef = 30000.0f/maxMagnitude;
+        //ScaleToShort Lambda
+        for_each(data[ch].begin(), data[ch].end(), [&](short &val)
+                 {val = (short)(normCoef * tmp[cnt++]);});
     }
-}
-
-void WavModifyer::convertSignal(size_t i, size_t samplesCountPerChan, vector<float> &signal, DataArray &data)
-{
-    for(size_t j = 0; j < samplesCountPerChan; j++)
-        signal[j] = data[i][j];
 }
 
 void WavModifyer::attachReverb(size_t samplesCountPerChan, int delaySamples, float decay, vector<float> &signal)
@@ -90,14 +89,6 @@ float WavModifyer::findMaxMagnitude(size_t samplesCountPerChan, int delaySamples
             maxMagnitude = abs(signal[i]);
     
     return maxMagnitude;
-}
-
-void WavModifyer::scaleToShort(size_t i, size_t samplesCountPerChan, float maxMagnitude, vector<float> &signal, DataArray &data)
-{
-    float normCoef = 30000.0f / maxMagnitude;
-    for(size_t j = 0; j < samplesCountPerChan; j++)
-        data[i][j] = (short)(normCoef * signal[j]);
-
 }
 
 void WavModifyer::saveFileAsNew(WavCore &WAV, const string &fileName)
@@ -118,9 +109,8 @@ void WavModifyer::cutFromEnding(float seconds, WavCore &WAV)
     DataArray& soundData = *copy.getData();
     int bytesToDelete = convertSecondsToBytes(seconds, copy.getHeader()->bitsPerSample, copy.getHeader()->sampleRate);
     for(auto &it: soundData)
-    {
         it.erase(it.end()-bytesToDelete, it.end());
-    }
+    
     updateHeader(copy);
     
     saveFileAsNew(copy, "cutted_from_end.wav");
@@ -132,9 +122,8 @@ void WavModifyer::cutFromBeginning(float seconds, WavCore &WAV)
     DataArray& soundData = *copy.getData();
     int bytesToDelete = convertSecondsToBytes(seconds, copy.getHeader()->bitsPerSample, copy.getHeader()->sampleRate);
     for(auto &it: soundData)
-    {
         it.erase(it.begin(), it.begin() + bytesToDelete);
-    }
+    
     updateHeader(copy);
     
     saveFileAsNew(copy, "cutted_from_begin.wav");

@@ -13,7 +13,6 @@ int main()
     
     WavModifyer mody;
     mody.cutFromEnding(30.0f, WAV);
-    //mody.addReverb(WAV.getHeader()->sampleRate, 0.5f, 0.6f, WAV);
     mody.cutFromBeginning(10.0f, WAV);
     WavCore WAV2 = WAV;
     mody.setModifyingState(WavModifyer::ModifyState::SAVE);
