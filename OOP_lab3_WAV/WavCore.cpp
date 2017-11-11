@@ -18,7 +18,6 @@ WavCore::WavCore()
 {
     SetDataZero();
     SetHeaderZero();
-    valid = false;
 }
 
 WavCore::~WavCore()
@@ -54,7 +53,6 @@ DataArray* WavCore::getData()
 void WavCore::setHeader(const WavCore::WavHeader &hdr)
 {
     header = hdr;
-    valid = checkHeader();
 }
 
 void WavCore::setData(const DataArray &dataVector)

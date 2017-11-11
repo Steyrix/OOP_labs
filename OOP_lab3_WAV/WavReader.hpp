@@ -4,19 +4,13 @@
 class WavReader
 {
 public:
-    explicit WavReader(const std::string &fileName);
     ~WavReader();
-    void ReInit(const std::string &fileName);
-    WavCore* getWAV();
     static const uint8_t headerSize;
+    static WavCore readSoundFile (const std::string &fileName);
 private:
-    DataArray dataToSet;
-    WavCore WAV;
-    std::size_t fileSize;
-    bool readHeader(const std::string &fileName) throw (IO_ERR_EXC, BAD_FORMAT_EXC);
-    bool readData(const std::string &fileName) throw (IO_ERR_EXC);
-    bool extractWavData(const std::string &fileName) throw (IO_ERR_EXC, UNSUPPORTED_FORMAT_EXC);
-    std::streampos getBytesReadCount(std::streampos pos, std::ifstream &stream);
-    void separateChannelsData(const std::vector<short>& allChannels, int chanCount, int samplesPerChan);
-    void setTempZero(WavCore::WavHeader &headerTemp);
+    static void readHeader(const std::string &fileName, WavCore &destinationFile) throw (IO_ERR_EXC, BAD_FORMAT_EXC);
+    static void readData(const std::string &fileName, WavCore &destinationFile) throw (IO_ERR_EXC);
+    static void separateChannelsData(const std::vector<short>& allChannels, DataArray &dataToSet, int chanCount, int samplesPerChan);
+    static void setTempZero(WavCore::WavHeader &headerTemp);
+    static std::streampos getBytesReadCount(std::streampos pos, std::ifstream &stream);
 };

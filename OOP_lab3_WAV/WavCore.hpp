@@ -30,7 +30,7 @@ public:
         int8_t subchunk2Id[4];
         uint32_t subchunk2Size;
     };
-    bool valid;
+
     WavHeader* getHeader();
     DataArray* getData();
     static const uint8_t chunkID[4];
@@ -46,13 +46,13 @@ public:
     void setData(const DataArray& dataVector);
     void printInfo() const;
     void setFileSize(std::size_t fSize);
+    bool checkHeader() const;
 private:
     WavHeader header;
     DataArray channelsData;
     std::size_t fileSize;
     void SetHeaderZero();
     void SetDataZero();
-    bool checkHeader() const;
     void checkRiff() const throw (HEADER_RIFF_EXC);
     void checkChunkSize() const throw (HEADER_FILE_SIZE_EXC);
     void checkWave() const throw (HEADER_WAVE_EXC);

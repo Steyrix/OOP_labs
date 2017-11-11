@@ -1,24 +1,28 @@
 #include "WavWriter.hpp"
 #include "WavReader.hpp"
 #include "WavModifyer.hpp"
+#include <iostream>
 
 int main()
 {
-    WavReader reader("0.wav");
-    WavCore WAV = *reader.getWAV();
+    try
+    {
+        WavCore soundData = WavReader::readSoundFile("0.wav");
+        WavCore soundData2 = WavReader::readSoundFile("0.wav");
+        WavWriter::createSoundFile("0rewrited00.wav", soundData);
+        WavModifyer::makeMono(soundData);
+        WavModifyer::addReverb(soundData, 0.5f, 0.6);
+        WavModifyer::addReverb(soundData2, 0.5f, 0.6);
+        WavWriter::createSoundFile("0reverbed.wav", soundData);
+        WavWriter::createSoundFile("reverbedStereo.wav", soundData2);
+    }
+    catch(std::runtime_error &re)
+    {
+        std::cerr << re.what() << std::endl;
+    }
     
-    WavWriter writer;
-    writer.ReInit(WAV);
-    writer.writeWAV("0new.wav");
-    
-    WavModifyer mody;
-    mody.cutFromEnding(30.0f, WAV);
-    mody.cutFromBeginning(10.0f, WAV);
-    WavCore WAV2 = WAV;
-    mody.setModifyingState(WavModifyer::ModifyState::SAVE);
-    mody.makeMono(WAV2);
-    mody.setModifyingState(WavModifyer::ModifyState::SAVE_AS_NEW);
-    mody.addReverb(WAV2.getHeader()->sampleRate, 0.5f, 0.6f, WAV2);
+    std::cout << "Processes finished..." << std::endl;
     getchar();
+    
     return 0;
 }

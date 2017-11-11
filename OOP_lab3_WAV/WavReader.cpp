@@ -5,28 +5,17 @@ using namespace std;
 
 const uint8_t WavReader::headerSize = 44;
 
-WavReader::WavReader(const string &fileName)
+WavCore WavReader::readSoundFile(const string& fileName)
 {
-    if(extractWavData(fileName))
-        cout << "Successfully read file " << fileName << endl;
-    else cout << "Failed to read " << fileName << endl;
+    WavCore soundFile;
+    readHeader(fileName, soundFile);
+    readData(fileName, soundFile);
+    return soundFile;
 }
 
 WavReader::~WavReader(){}
 
-void WavReader::ReInit(const std::string &fileName)
-{
-    if(extractWavData(fileName))
-        cout << "Successfully read file " << fileName << endl;
-    else cout << "Failed to read " << fileName << endl;
-}
-
-WavCore* WavReader::getWAV()
-{
-    return &WAV;
-}
-
-bool WavReader::readHeader(const string &fileName) throw (IO_ERR_EXC, BAD_FORMAT_EXC)
+void WavReader::readHeader(const string &fileName, WavCore &destinationFile) throw (IO_ERR_EXC, BAD_FORMAT_EXC)
 {
     
     ifstream fin(fileName, ifstream::binary);
@@ -42,55 +31,48 @@ bool WavReader::readHeader(const string &fileName) throw (IO_ERR_EXC, BAD_FORMAT
     if(fin.gcount() != sizeof(WavCore::WavHeader))
         throw BAD_FORMAT_EXC("File has bad format and fails to be read correctly!");
     
-    fileSize = getBytesReadCount(0, fin);
-    WAV.setFileSize(fileSize);
+    size_t fileSize = getBytesReadCount(0, fin);
+    destinationFile.setFileSize(fileSize);
     fin.close();
     
-    WAV.setHeader(headerTemp);
-    return WAV.valid;
+    destinationFile.setHeader(headerTemp);
+    destinationFile.checkHeader();
 }
 
-bool WavReader::readData(const string &fileName) throw (IO_ERR_EXC)
+void WavReader::readData(const string &fileName, WavCore &destinationFile) throw (IO_ERR_EXC)
 {
     ifstream fin(fileName, ifstream::binary);
-    try
-    {
-        if(WAV.getHeader()->bitsPerSample != 16 && WAV.getHeader()->bitsPerSample != 8)
-            throw UNSUPPORTED_FORMAT_EXC("Only 16-bit and 8-bit samples are supported!");
+
+    if(destinationFile.getHeader()->bitsPerSample != 16 && destinationFile.getHeader()->bitsPerSample != 8)
+        throw UNSUPPORTED_FORMAT_EXC("Only 16-bit and 8-bit samples are supported!");
         
-        if(fin.fail())
-            throw IO_ERR_EXC("Unable to open file! " + fileName);
+    if(fin.fail())
+        throw IO_ERR_EXC("Unable to open file! " + fileName);
         
-        fin.seekg(headerSize);
+    fin.seekg(headerSize);
         
-        int chanCount = WAV.getHeader()->numChannels,
-        samplesPerChan = (static_cast<int>(WAV.getHeader()->subchunk2Size) / sizeof(short)) / chanCount;
+    int chanCount = destinationFile.getHeader()->numChannels,
+    samplesPerChan = (static_cast<int>(destinationFile.getHeader()->subchunk2Size) / sizeof(short)) / chanCount;
         
-        vector<short> allChannels;
-        allChannels.resize(samplesPerChan * chanCount);
+    vector<short> allChannels;
+    allChannels.resize(samplesPerChan * chanCount);
         
-        fin.read((char*)allChannels.data(), WAV.getHeader()->subchunk2Size);
+    fin.read((char*)allChannels.data(), destinationFile.getHeader()->subchunk2Size);
         
-        size_t bytesRead = fin.gcount();
-        size_t bytesReadCount = getBytesReadCount(headerSize, fin);
-        if(bytesRead != bytesReadCount)
-            throw IO_ERR_EXC("Function extractWavData read only " + to_string(bytesRead) + " of " + to_string(bytesReadCount));
+    size_t bytesRead = fin.gcount();
+    size_t bytesReadCount = getBytesReadCount(headerSize, fin);
+    if(bytesRead != bytesReadCount)
+        throw IO_ERR_EXC("Function extractWavData read only " + to_string(bytesRead) + " of " + to_string(bytesReadCount));
         
-        fin.close();
+    fin.close();
         
-        separateChannelsData(allChannels, chanCount, samplesPerChan);
-        WAV.setData(dataToSet);
-        
-        return true;
-    }
-    catch(runtime_error &re)
-    {
-        cerr << re.what() << endl;
-        return false;
-    }
+    DataArray dataToSet;
+    separateChannelsData(allChannels, dataToSet, chanCount, samplesPerChan);
+    destinationFile.setData(dataToSet);
+    
 }
 
-void WavReader::separateChannelsData(const vector<short>& allChannels, int chanCount, int samplesPerChan)
+void WavReader::separateChannelsData(const vector<short>& allChannels, DataArray &dataToSet, int chanCount, int samplesPerChan)
 {
     dataToSet.resize(chanCount);
     for(auto &it : dataToSet)
@@ -118,21 +100,4 @@ streampos WavReader::getBytesReadCount(streampos pos, ifstream &stream)
     return fSize;
 }
 
-
-bool WavReader::extractWavData(const string &fileName) throw (IO_ERR_EXC, UNSUPPORTED_FORMAT_EXC)
-{
-    bool result;
-    
-    try
-    {
-        result = readHeader(fileName) && readData(fileName);
-    }
-    catch (runtime_error &re)
-    {
-        cerr << re.what() << endl;
-        return false;
-    }
-    
-    return result;
-}
 
