@@ -1,12 +1,12 @@
 #ifndef StatisticMultiset_hpp
 #define StatisticMultiset_hpp
+#include <map>
 #include <set> 
 #include <list>
 #include <vector>
-#include <map>
+#include <fstream>
 #include <iostream>
 #include "myException.hpp"
-#include <fstream>
 
 template <class T>
 class StatisticMultiset
@@ -28,10 +28,9 @@ class StatisticMultiset
         
         void AddNum (T num);
         void AddNumFromFile (const std::string &fileName);
-        void AddNum(const StatisticMultiset &statset) throw (CopyingFromItself);
+        void AddNum(const StatisticMultiset &statset);
         template <class Iter>
         void AddNum(Iter first, Iter last);
-    
         void Show() const;
         
         StatisticMultiset<T>& operator=(const StatisticMultiset<T> &otherset);
@@ -167,7 +166,7 @@ void StatisticMultiset<T>::AddNum(T num)
 }
 
 template <typename T>
-void StatisticMultiset<T>::AddNum(const StatisticMultiset &statset) throw (CopyingFromItself)
+void StatisticMultiset<T>::AddNum(const StatisticMultiset &statset)
 {
     if(statset.data.begin() == this->data.begin())
         throw CopyingFromItself();
@@ -188,12 +187,14 @@ template <typename T>
 void StatisticMultiset<T>::AddNumFromFile(const std::string &fileName)
 {
     std::ifstream fin;
-    T num;
+    
     fin.open(fileName);
-    if(fin.is_open())
-        while(fin >> num)
-            AddNum(num);
-    else std::cerr << "Unable ot open file" << std::endl;
+    if(!fin.is_open())
+        std::cerr << "Unable ot open file" << std::endl;
+    
+    T num;
+    while(fin >> num)
+        AddNum(num);
 }
 
 //===OTHERFUNCTIONS===

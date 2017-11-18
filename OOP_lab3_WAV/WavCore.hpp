@@ -53,15 +53,15 @@ private:
     std::size_t fileSize;
     void SetHeaderZero();
     void SetDataZero();
-    void checkRiff() const throw (HEADER_RIFF_EXC);
-    void checkChunkSize() const throw (HEADER_FILE_SIZE_EXC);
-    void checkWave() const throw (HEADER_WAVE_EXC);
-    void checkFMT() const throw (HEADER_FMT_EXC);
-    void checkPCM() const throw (HEADER_NOT_PCM_EXC);
-    void checkSubchunk1() const throw (HEADER_SUBCHUNK1_EXC);
-    void checkByteRate() const throw (HEADER_BYTERATE_EXC);
-    void checkBlockAlign() const throw (HEADER_BLOCK_ALIGN_EXC);
-    void checkSubchunk2() const throw (HEADER_SUBCHUNK2_SIZE_EXC);
+    void checkRiff() const;
+    void checkChunkSize() const;
+    void checkWave() const;
+    void checkFMT() const;
+    void checkPCM() const;
+    void checkSubchunk1() const;
+    void checkByteRate() const;
+    void checkBlockAlign() const;
+    void checkSubchunk2() const;
     void checkAll() const;
 };
 

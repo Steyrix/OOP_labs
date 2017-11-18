@@ -13,16 +13,14 @@ public:
     iniParser();
     iniParser(const std::string &fName);
     ~iniParser();
-    void initialize(const std::string &fName) throw (iniNotParsedException,);
+    void initialize(const std::string &fName);
     void show() const; //Print out all sections, parameters and their values
-    void makeParameter(const std::string &sectionName, const std::string &paramName, const std::string &value) throw (iniNotParsedException);
-    bool existSection(const std::string &sectionName) const throw (iniNotParsedException);
-    bool existParameter(const std::string &sectionName, const std::string &parameterName) const throw
-    (InvalidSectionException,iniNotParsedException);
+    void makeParameter(const std::string &sectionName, const std::string &paramName, const std::string &value);
+    bool existSection(const std::string &sectionName) const;
+    bool existParameter(const std::string &sectionName, const std::string &parameterName) const;
     bool isParsed() const;
     template <typename T>
-    T getValue (const std::string &sectionName, const std::string &paramName) const throw
-    (InvalidDataTypeException);
+    T getValue (const std::string &sectionName, const std::string &paramName) const;
 private:
     DataMap dataMap;
     std::string fileName;
@@ -33,8 +31,7 @@ private:
     void findCommentInLine(const std::string &line, size_t &lineEnd) const;
     bool findSectionInLine(const std::string &line, std::string& lastSection) const;
     void findParamInLine(const std::string &line, const std::string &lastSection, size_t &lineEnd);
-    std::string getString(const std::string &sectionName, const std::string &paramName) const throw
-    (InvalidSectionException,InvalidParameterException, iniNotParsedException);
+    std::string getString(const std::string &sectionName, const std::string &paramName) const;
 };
 
 #endif

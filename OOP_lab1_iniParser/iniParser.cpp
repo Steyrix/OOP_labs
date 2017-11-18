@@ -40,7 +40,7 @@ iniParser::~iniParser()
     dataMap.clear();
 }
 
-void iniParser::initialize(const string &fName) throw (iniNotParsedException)
+void iniParser::initialize(const string &fName)
 {
     if(iniParsed)
         dataMap.clear();
@@ -119,14 +119,14 @@ void iniParser::findParamInLine(const string &line, const string &lastSection, s
     }
 }
 
-void iniParser::makeParameter(const string &sectionName, const string &paramName, const string &value) throw(iniNotParsedException)
+void iniParser::makeParameter(const string &sectionName, const string &paramName, const string &value)
 {
     if(iniParsed)
         dataMap[sectionName][paramName] = value;
     else throw iniNotParsedException();
 }
 
-bool iniParser::existSection(const string &sectionName) const throw (iniNotParsedException)
+bool iniParser::existSection(const string &sectionName) const
 {
     if(!iniParsed)
         throw iniNotParsedException();
@@ -138,7 +138,7 @@ bool iniParser::existSection(const string &sectionName) const throw (iniNotParse
         return false;
 }
 
-bool iniParser::existParameter(const string &sectionName, const string &paramName) const throw (InvalidSectionException, iniNotParsedException)
+bool iniParser::existParameter(const string &sectionName, const string &paramName) const
 {
     if(!iniParsed)
         throw iniNotParsedException();
@@ -155,8 +155,7 @@ bool iniParser::existParameter(const string &sectionName, const string &paramNam
 }
 
 template <>
-int iniParser::getValue(const string &sectionName, const string &paramName) const throw
-(InvalidDataTypeException)
+int iniParser::getValue(const string &sectionName, const string &paramName) const
 {
     string res = getString(sectionName, paramName);
     if(isInteger(res))
@@ -165,8 +164,7 @@ int iniParser::getValue(const string &sectionName, const string &paramName) cons
 }
 
 template <>
-float iniParser::getValue(const string &sectionName, const string &paramName) const throw
-(InvalidDataTypeException)
+float iniParser::getValue(const string &sectionName, const string &paramName) const
 {
     string res = getString(sectionName, paramName);
     if(isFloat(res))
@@ -175,14 +173,12 @@ float iniParser::getValue(const string &sectionName, const string &paramName) co
 }
 
 template <>
-string iniParser::getValue(const string &sectionName, const string &paramName) const throw
-(InvalidDataTypeException)
+string iniParser::getValue(const string &sectionName, const string &paramName) const
 {
     return getString(sectionName, paramName);
 }
 
-string iniParser::getString(const string &sectionName, const string &paramName) const throw
-(InvalidSectionException, InvalidParameterException, iniNotParsedException)
+string iniParser::getString(const string &sectionName, const string &paramName) const
 {
     if(!iniParsed)
         throw iniNotParsedException();

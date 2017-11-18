@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void WavWriter::createSoundFile(const string &fileName, WavCore &soundFile) throw (IO_ERR_EXC, NULL_DATA, BAD_PARAMS_EXC)
+void WavWriter::createSoundFile(const string &fileName, WavCore &soundFile)
 {
     if(soundFile.getData()->empty())
         throw NULL_DATA("Nothing to write!");

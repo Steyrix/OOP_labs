@@ -105,7 +105,7 @@ void WavCore::checkAll() const
     checkSubchunk2();
 }
 
-void WavCore::checkRiff() const throw (HEADER_RIFF_EXC)
+void WavCore::checkRiff() const
 {
     if (header.chunkId[0] != chunkID[0] ||
         header.chunkId[1] != chunkID[1] ||
@@ -114,13 +114,13 @@ void WavCore::checkRiff() const throw (HEADER_RIFF_EXC)
         throw HEADER_RIFF_EXC("RIFF error!");
 }
 
-void WavCore::checkChunkSize() const throw (HEADER_FILE_SIZE_EXC)
+void WavCore::checkChunkSize() const
 {
     if(header.chunkSize != fileSize - preChunkSize)
         throw HEADER_FILE_SIZE_EXC("Invalid file size!");
 }
 
-void WavCore::checkWave() const throw (HEADER_WAVE_EXC)
+void WavCore::checkWave() const
 {
     if (header.format[0] != format[0] ||
         header.format[1] != format[1] ||
@@ -129,7 +129,7 @@ void WavCore::checkWave() const throw (HEADER_WAVE_EXC)
         throw HEADER_WAVE_EXC("WAVE error!");
 }
 
-void WavCore::checkFMT() const throw (HEADER_FMT_EXC)
+void WavCore::checkFMT() const
 {
     if (header.subchunk1Id[0] != subchunk1Id[0] ||
         header.subchunk1Id[1] != subchunk1Id[1] ||
@@ -142,31 +142,31 @@ void WavCore::checkFMT() const throw (HEADER_FMT_EXC)
         throw HEADER_FMT_EXC("FMT error!");
 }
 
-void WavCore::checkPCM() const throw (HEADER_NOT_PCM_EXC)
+void WavCore::checkPCM() const
 {
     if (header.audioFormat != audioFormat)
         throw HEADER_NOT_PCM_EXC("Header is not PCM!");
 }
 
-void WavCore::checkSubchunk1() const throw (HEADER_SUBCHUNK1_EXC)
+void WavCore::checkSubchunk1() const
 {
     if (header.subchunk1Size != subchunk1Size)
         throw HEADER_SUBCHUNK1_EXC("Invalid subchunk1!");
 }
 
-void WavCore::checkByteRate() const throw (HEADER_BYTERATE_EXC)
+void WavCore::checkByteRate() const
 {
     if (header.byteRate != header.sampleRate * header.numChannels * header.bitsPerSample / byteSize)
         throw HEADER_BYTERATE_EXC("Invalid byterate!");
 }
 
-void WavCore::checkBlockAlign() const throw (HEADER_BLOCK_ALIGN_EXC)
+void WavCore::checkBlockAlign() const
 {
     if (header.blockAlign != header.numChannels * header.bitsPerSample / byteSize)
         throw HEADER_BLOCK_ALIGN_EXC("Invalid block align!");
 }
 
-void WavCore::checkSubchunk2() const throw (HEADER_SUBCHUNK2_SIZE_EXC)
+void WavCore::checkSubchunk2() const 
 {
     if (header.subchunk2Size != (long)fileSize - headerSize)
         throw HEADER_SUBCHUNK2_SIZE_EXC("Invalid size of subchunk2");

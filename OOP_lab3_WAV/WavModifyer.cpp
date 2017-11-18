@@ -5,7 +5,7 @@ using namespace std;
 
 WavModifyer::~WavModifyer(){}
 
-size_t WavModifyer::getChanCount(const DataArray &soundData) throw (BAD_PARAMS_EXC)
+size_t WavModifyer::getChanCount(const DataArray &soundData)
 {
     size_t chanCount = soundData.size();
     if(chanCount != 1 && chanCount != 2)
@@ -14,7 +14,7 @@ size_t WavModifyer::getChanCount(const DataArray &soundData) throw (BAD_PARAMS_E
     return chanCount;
 }
 
-size_t WavModifyer::getSamplesPerChan(const DataArray &soundData) throw (BAD_PARAMS_EXC)
+size_t WavModifyer::getSamplesPerChan(const DataArray &soundData)
 {
     size_t samplesCountPerChan = (size_t)soundData[0].size();
     for (const auto &it : soundData)
@@ -124,7 +124,7 @@ void WavModifyer::calculateMean(DataArray &source, DataArray &dest, size_t sampl
         dest[0][i] = (source[0][i] + source[1][i]) / 2;
 }
 
-void WavModifyer::checkChannels(DataArray &data) throw (BAD_PARAMS_EXC)
+void WavModifyer::checkChannels(DataArray &data)
 {
     size_t chanCount = data.size();
     if(chanCount != 2)

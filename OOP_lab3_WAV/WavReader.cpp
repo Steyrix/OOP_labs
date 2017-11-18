@@ -15,7 +15,7 @@ WavCore WavReader::readSoundFile(const string& fileName)
 
 WavReader::~WavReader(){}
 
-void WavReader::readHeader(const string &fileName, WavCore &destinationFile) throw (IO_ERR_EXC, BAD_FORMAT_EXC)
+void WavReader::readHeader(const string &fileName, WavCore &destinationFile)
 {
     
     ifstream fin(fileName, ifstream::binary);
@@ -39,7 +39,7 @@ void WavReader::readHeader(const string &fileName, WavCore &destinationFile) thr
     destinationFile.checkHeader();
 }
 
-void WavReader::readData(const string &fileName, WavCore &destinationFile) throw (IO_ERR_EXC)
+void WavReader::readData(const string &fileName, WavCore &destinationFile)
 {
     ifstream fin(fileName, ifstream::binary);
 

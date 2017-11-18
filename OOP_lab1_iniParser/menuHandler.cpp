@@ -76,44 +76,52 @@ void MenuHandler::getCommand()
     cout << "Input command (type HELP for hints):" << endl;
     while(com != "exit" && com != "EXIT")
     {
-        cin >> com;
-        if (com == "HELP")
-            cout << helpText << endl;
-        else if (com == "LAST")
-            cout << "Current file parsed is " << lastFile << endl;
-        else if (com == "INIT")
+        try
         {
-            cin >> arg1;
-            initParser(arg1);
+            cin >> com;
+            if (com == "HELP")
+                cout << helpText << endl;
+            else if (com == "LAST")
+                cout << "Current file parsed is " << lastFile << endl;
+            else if (com == "INIT")
+            {
+                cin >> arg1;
+                initParser(arg1);
+            }
+            else if (com == "EXSEC")
+            {
+                cin >> arg1;
+                exSection(arg1);
+            }
+            else if (com == "EXPAR")
+            {
+                cin >> arg1 >> arg2; //arg2 is parameter's name, arg1 is section's name
+                exParam(arg1, arg2);
+            }
+            else if (com == "GETVAL")
+            {
+                cin >> arg1 >> arg2 >> arg3; //arg3 is typename
+                getVal(arg1, arg2, arg3);
+            }
+            else if (com == "MAKE")
+            {
+                cin >> arg1 >> arg2 >> arg3;
+                makeParam(arg1, arg2, arg3);
+            }
+            else if (com == "SHOW")
+            {
+                parser.show();
+            }
+            else if (com == "EXIT" || com == "exit")
+                continue;
+            else
+                cout << "Unknown command. Type HELP for manual." << endl;
         }
-        else if (com == "EXSEC")
+        catch(const std::exception &ex)
         {
-            cin >> arg1;
-            exSection(arg1);
-        }
-        else if (com == "EXPAR")
-        {
-            cin >> arg1 >> arg2; //arg2 is parameter's name, arg1 is section's name
-            exParam(arg1, arg2);
-        }
-        else if (com == "GETVAL")
-        {
-            cin >> arg1 >> arg2 >> arg3; //arg3 is typename
-            getVal(arg1, arg2, arg3);
-        }
-        else if (com == "MAKE")
-        {
-            cin >> arg1 >> arg2 >> arg3;
-            makeParam(arg1, arg2, arg3);
-        }
-        else if (com == "SHOW")
-        {
-            parser.show();
-        }
-        else if (com == "EXIT" || com == "exit")
+            cerr << ex.what() << endl;
             continue;
-        else
-            cout << "Unknown command. Type HELP for manual." << endl;
+        }
     }
     
 }
