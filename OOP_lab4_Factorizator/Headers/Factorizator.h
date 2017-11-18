@@ -1,5 +1,4 @@
 #pragma once
-#include "PollardRho.hpp"
 #include <string>
 #include <vector>
 #include <fstream>

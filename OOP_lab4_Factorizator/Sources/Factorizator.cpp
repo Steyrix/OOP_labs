@@ -1,5 +1,6 @@
-#include "Factorizator.hpp"
-#include "MyExceptions.h" 
+#include "../Headers/Factorizator.h"
+#include "../Headers/MyException.h"
+#include "../Headers/PollardRho.h"
 #include <math.h>
 #include <sstream>
 
@@ -17,7 +18,7 @@ Factorizator::Factorizator()
 
 Factorizator::Factorizator(uint64_t num)
 {
-    
+
     Algorithm = algorithmUsed::POLLARD_RHO;
     factoriseNumber(num);
 }
@@ -39,25 +40,25 @@ void Factorizator::factoriseNumber(uint64_t num)
         factoriseByNaive(num);
     else factoriseByPollard(num);
 }
-       
+
 void Factorizator::FactoriseToFile(const string &input, const string &output)
 {
     ifstream fin(input);
     ofstream fout(output);
-    
+
     if(!fin.good())
         throw IO_EXC("Unable to open input file!");
-    
+
     if(!fout.good())
         throw IO_EXC("Unable to open/create output file!");
-    
+
     uint64_t inNum;
     while(fin >> inNum)
     {
         factoriseNumber(inNum);
         fout << inNum << ": " << this->getFactors() << endl;
     }
-    
+
     fin.close();
     fout.close();
 }
@@ -84,7 +85,7 @@ void Factorizator::factoriseByNaive(uint64_t num)
             num /= i;
         }
     }
-    
+
     if (num > 2)
         factors.push_back(num);
 }
@@ -92,13 +93,13 @@ void Factorizator::factoriseByNaive(uint64_t num)
 void Factorizator::factoriseByPollard(uint64_t num)
 {
     srand(static_cast<int>(time(NULL)));
-    
+
     if(isPrime(num))
     {
         factors.push_back(num);
         return;
     }
-    
+
     while(!isPrime(num))
     {
         uint64_t pro = PollardRho(num);
@@ -113,9 +114,9 @@ void Factorizator::factoriseByPollard(uint64_t num)
             factoriseByPollard(pro);
         }
     }
-    
+
     if(num != 1)
-    factors.push_back(num);
+        factors.push_back(num);
 
 }
 
@@ -124,12 +125,12 @@ string Factorizator::getFactors() const
 {
     if(factors.empty())
         throw NO_FACTORS_EXC("Factorization was not done! Please, init factorizator with number.");
-    
+
     ostringstream sout;
-    
+
     copy(factors.begin(), factors.end()-1, ostream_iterator<uint64_t>(sout, " "));
     sout << factors.back();
-    
+
     return sout.str();
 }
 
@@ -141,8 +142,6 @@ uint64_t Factorizator::calculateNumByFactors() const
     uint64_t out = 1;
     for(auto &it: factors)
         out *= it;
-    
+
     return out;
 }
-
-

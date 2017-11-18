@@ -1,0 +1,4 @@
+/Applications/CLion.app/Contents/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/steyrix/CLionProjects/OOP_lab4_Factorizator
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/steyrix/CLionProjects/OOP_lab4_Factorizator/cmake-build-debug
