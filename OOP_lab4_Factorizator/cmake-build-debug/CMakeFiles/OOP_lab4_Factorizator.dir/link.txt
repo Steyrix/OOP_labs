@@ -1,1 +1,0 @@
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  -g -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/OOP_lab4_Factorizator.dir/main.cpp.o CMakeFiles/OOP_lab4_Factorizator.dir/Sources/Factorizator.cpp.o CMakeFiles/OOP_lab4_Factorizator.dir/Sources/PollardRho.cpp.o  -o OOP_lab4_Factorizator 
