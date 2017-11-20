@@ -115,6 +115,8 @@ void WavModifyer::makeMono(WavCore &soundFile)
     DataArray monoData(1);
     calculateMean(source, monoData, samplesCountPerChan);
 
+    soundFile.setData(monoData);
+    updateHeader(soundFile);
 }
 
 void WavModifyer::calculateMean(DataArray &source, DataArray &dest, size_t samplesCountPerChan)
@@ -139,6 +141,9 @@ void WavModifyer::updateHeader(WavCore &soundFile)
         sizeSubchunk += it.size();
     soundFile.getHeader()->numChannels = soundFile.getData()->size();
     soundFile.getHeader()->subchunk2Size = ((unsigned int)sizeSubchunk * sizeof(short));
-    soundFile.getHeader()->chunkSize = 36 + soundFile.getHeader()->subchunk2Size;
+    soundFile.getHeader()->chunkSize = WavCore::headerSize - WavCore::preChunkSize + soundFile.getHeader()->subchunk2Size;
+    soundFile.setFileSize(WavCore::headerSize+soundFile.getHeader()->subchunk2Size);
+    soundFile.getHeader()->byteRate = soundFile.getHeader()->sampleRate * soundFile.getHeader()->numChannels * soundFile.getHeader()->bitsPerSample / WavCore::byteSize;
+    soundFile.getHeader()->blockAlign = soundFile.getHeader()->numChannels * soundFile.getHeader()->bitsPerSample / WavCore::byteSize;
 }
 
