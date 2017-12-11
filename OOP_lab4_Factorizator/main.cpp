@@ -6,11 +6,11 @@ using namespace std;
 
 int main()
 {
-    Factorizator fnaive;
-    fnaive.Init(4765955355892171345);
-    cout << "Naive algorithm: \n" << fnaive.getFactors() << endl;
+    //Factorizator fnaive;
+    //fnaive.Init(4765955355892171345);
+    //cout << "Naive algorithm: \n" << fnaive.getFactors() << endl;
 
-    Factorizator fpro(4765955355892171345);
+    Factorizator fpro(8233234222222222222);
     cout << "\n Pollard-rho algorithm: \n" << fpro.getFactors() << endl;
     cout << fpro.calculateNumByFactors() << endl;
 

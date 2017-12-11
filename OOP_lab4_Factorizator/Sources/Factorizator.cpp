@@ -4,9 +4,7 @@
 #include <math.h>
 #include <sstream>
 
-
 using namespace std;
-
 
 //Make queue for each thread and push numbers (readen from file) to available by space queues
 //and process them in their threads.
@@ -23,6 +21,11 @@ Factorizator::Factorizator(uint64_t num)
     factoriseNumber(num);
 }
 
+Factorizator::Factorizator(algorithmUsed algo) : Algorithm(algo){}
+
+Factorizator::Factorizator(algorithmUsed algo, uint64_t num) : Algorithm(algo) {
+    factoriseNumber(num);
+}
 
 Factorizator::~Factorizator(){};
 

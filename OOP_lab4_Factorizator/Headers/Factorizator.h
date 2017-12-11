@@ -12,6 +12,8 @@ public:
         POLLARD_RHO = 1
     };
     explicit Factorizator(uint64_t num);
+    explicit Factorizator(algorithmUsed algo);
+    explicit Factorizator(algorithmUsed algo, uint64_t num);
     Factorizator();
     ~Factorizator();
     void Init(uint64_t num);

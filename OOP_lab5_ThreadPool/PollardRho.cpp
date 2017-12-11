@@ -1,7 +1,6 @@
-#include "../Headers/PollardRho.h"
+#include "PollardRho.hpp"
 #include <cstdlib>
-#include <algorithm>
-#include <iterator>
+#include <ctime>
 #include <boost/multiprecision/cpp_int.hpp>
 
 uint64_t myABS(int64_t num)
@@ -12,15 +11,6 @@ uint64_t myABS(int64_t num)
 uint64_t myGCD(uint64_t a, uint64_t b)
 {
     return b ? myGCD(b, a % b) : a;
-}
-
-bool inArray(uint32_t arr[], int n, int len)
-{
-    for(int i = 0; i < 7; i++)
-        if(arr[i] == n)
-            return true;
-
-    return false;
 }
 
 uint64_t modularPow(uint64_t base, uint64_t e, uint64_t modulo)
@@ -76,12 +66,11 @@ uint64_t PollardRho(uint64_t n)
 bool isPrime(uint64_t num)
 {
     uint64_t a;
-    uint32_t arr[7] = {1,2,3,5,7,11,17};
 
-    if(inArray(arr,num,7))
-       return true;
+    if(num == 1 || num == 2 || num == 3 || num == 5 || num == 7 || num == 11)
+        return true;
 
-    if(num % 2 == 0 || num % 3 == 0 || num % 5 == 0 || num % 7 == 0 || num % 11 == 0 || num % 17 == 0)
+    if(num % 2 == 0 || num % 3 == 0 || num % 5 == 0 || num % 7 == 0 || num % 11 == 0)
         return false;
 
     for(uint16_t k = 0; k < 100; k++)
@@ -92,4 +81,3 @@ bool isPrime(uint64_t num)
     }
     return true;
 }
-
