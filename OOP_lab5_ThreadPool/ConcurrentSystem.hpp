@@ -11,7 +11,7 @@ template <class T>
 class ConcurrentQueue
 {
 public:
-    ConcurrentQueue()= default;
+    explicit ConcurrentQueue()= default;
     ~ConcurrentQueue()= default;
     void push(T item)
     {
@@ -50,8 +50,8 @@ const uint8_t ConcurrentQueue<T>::maxSize = 20;
 class Reader
 {
 public:
-    Reader(const std::string &input) : inputFile(input){};
-    ~Reader(){};
+    explicit Reader(const std::string &input) : inputFile(input){};
+    ~Reader()= default;
 
     template <typename T>
     void runLoop(ConcurrentQueue<T> &numbersQueue)
@@ -90,7 +90,7 @@ template <class T>
 class ConcurrentProcesser
 {
 public:
-    ConcurrentProcesser(const std::string &input, const std::string &output, size_t poolSize)
+    explicit ConcurrentProcesser(const std::string &input, const std::string &output, size_t poolSize)
             : inputReader(input), outputFile(output), pool(poolSize + 2), pause(false), fileDone(false), disabled(false) {};
     ~ConcurrentProcesser()= default;
     void processFile()
@@ -132,7 +132,7 @@ public:
 
                 factors = pool.addTaskToPool([this, &fout](){
                     T val = numbersQueue.popFront();
-                    std::string strout = Factorizator::getFactorStringFromVector(Factorizator::factoriseByNaive(val));
+                    std::string strout = Factorizator::getFactorStringFromVector(Factorizator::factoriseByPollard(val));
                     fout << val << ": " << strout << std::endl;
                 });
                 factors.get();

@@ -17,7 +17,7 @@
 class ThreadPool
 {
 public:
-    ThreadPool(size_t);
+    explicit ThreadPool(size_t);
     ~ThreadPool();
 
     template<class Task, class... Args>
